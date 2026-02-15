@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// Display the user's total money donated
 class MoneyDonated extends StatelessWidget {
   const MoneyDonated({super.key});
 
+  /// Show user's donation amount and component title
   Widget build(BuildContext context) {
     return Column(
       children: [
