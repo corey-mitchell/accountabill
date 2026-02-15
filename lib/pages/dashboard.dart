@@ -40,6 +40,7 @@ class DashboardPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [CompletionRate(), MoneyDonated()],
           ),
+
           Container(
             width: double.infinity, // consume full width
             padding: EdgeInsets.all(16),
@@ -63,6 +64,7 @@ class DashboardPage extends StatelessWidget {
               ],
             ),
           ),
+
           Spacer(), // Push button to the bottom
           Padding(
             padding: EdgeInsets.only(
