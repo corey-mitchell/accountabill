@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+/// Display a simple pie chart of the user's completion percentage
 class CompletionRate extends StatelessWidget {
   const CompletionRate({super.key});
 
+  /// Show pie chart and component title
   Widget build(BuildContext context) {
     return Column(
       children: [
@@ -28,6 +30,11 @@ class CompletionRate extends StatelessWidget {
     );
   }
 
+  /// Create pie chart sections
+  ///
+  /// Currently displays a hardcoded value
+  ///
+  /// @param BuildContext context
   List<PieChartSectionData> _pieChartSections(BuildContext context) {
     return [
       PieChartSectionData(

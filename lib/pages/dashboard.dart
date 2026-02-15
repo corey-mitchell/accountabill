@@ -2,18 +2,24 @@ import 'package:accountabill/widgets/completion_rate.dart';
 import 'package:accountabill/widgets/money_donated.dart';
 import 'package:flutter/material.dart';
 
+/// Main Dashboard page
+///
+/// This is where the user will see general statistics and
+/// be driven to other places in the application.
+///
+/// @params String userName
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key, required this.userName});
 
   final String userName;
 
-  // Return page scaffold
+  /// Page scaffold
   @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: _appBar(context), body: _buildUI(context));
   }
 
-  // Page app bar
+  /// Page app bar widget
   PreferredSizeWidget _appBar(BuildContext context) {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primaryFixed,
@@ -29,7 +35,7 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  // Page UI
+  /// Page UI main widget
   Widget _buildUI(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
