@@ -1,3 +1,5 @@
+import 'package:accountabill/pages/events.dart';
+import 'package:accountabill/pages/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:accountabill/pages/dashboard.dart';
 
@@ -31,6 +33,15 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
+      // Create and use stack navigation
+      routes: {
+        // '/': (BuildContext ctx) => DashboardPage(userName: 'Corey'), // Using home to inject dynamic data
+        '/settings': (BuildContext ctx) => SettingsPage(),
+        '/events': (BuildContext ctx) => EventsPage(),
+      },
+      initialRoute: '/', // Can omit if value is '/'
+      // We do not need the home property with stack navigation.
+      // UNLESS the route requires data to be passed down
       home: DashboardPage(userName: 'Corey'),
     );
   }

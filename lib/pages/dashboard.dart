@@ -28,7 +28,7 @@ class DashboardPage extends StatelessWidget {
         IconButton(
           icon: Icon(Icons.settings),
           onPressed: () {
-            print('Route to settings page');
+            Navigator.pushNamed(context, '/settings');
           },
         ),
       ],
@@ -81,7 +81,7 @@ class DashboardPage extends StatelessWidget {
               height: 48,
               child: ElevatedButton(
                 onPressed: () {
-                  print('Route to events page');
+                  Navigator.pushNamed(context, '/events');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
