@@ -9,6 +9,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
+  auth0_flutter:
+    dependency: "direct main"
+    description:
+      name: auth0_flutter
+      sha256: "93538e95c47779fa434367dd5c4fcc6706b118cf298fbeabee282d76ac1ede7d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0-beta.3"
+  auth0_flutter_platform_interface:
+    dependency: transitive
+    description:
+      name: auth0_flutter_platform_interface
+      sha256: "21cbbc6d7279b6017580896ea333a289d0580fe72008f30b8e8d6c7bd61a1890"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0-beta.3"
   boolean_selector:
     dependency: transitive
     description:
@@ -91,6 +107,11 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -155,6 +176,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
+  plugin_platform_interface:
+    dependency: transitive
+    description:
+      name: plugin_platform_interface
+      sha256: "4820fbfdb9478b1ebae27888254d445073732dae3d6ea81f0b7e06d5dedc3f02"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.8"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -224,6 +253,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.0.2"
+  web:
+    dependency: transitive
+    description:
+      name: web
+      sha256: "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
 sdks:
   dart: ">=3.10.7 <4.0.0"
   flutter: ">=3.27.4"
