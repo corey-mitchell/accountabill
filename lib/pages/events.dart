@@ -19,7 +19,7 @@ class EventsPage extends StatelessWidget {
   /// Page app bar widget
   PreferredSizeWidget _appBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Theme.of(context).colorScheme.primaryFixed,
+      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       title: Text("Events"),
       centerTitle: true,
     );
