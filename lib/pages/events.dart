@@ -1,3 +1,4 @@
+import 'package:accountabill/widgets/custom_time_picker.dart';
 import 'package:accountabill/widgets/under_construction.dart';
 import 'package:flutter/material.dart';
 
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 /// This is where the user will be able to see and
 /// edit their events on a calendar component
 class EventsPage extends StatelessWidget {
+  static DateTime date = DateTime.now();
   const EventsPage({super.key});
 
   /// Page scaffold
@@ -27,6 +29,6 @@ class EventsPage extends StatelessWidget {
 
   /// Page UI main widget
   Widget _buildUI(BuildContext context) {
-    return UnderConstruction();
+    return CustomTimePicker(date: date, events: []);
   }
 }

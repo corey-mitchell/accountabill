@@ -40,7 +40,7 @@ dependencies:
 
   # The following is for the Auth0 Flutter SDK
   # This is used for handling authentication services
-  auth0_flutter: ^2.0.0-beta.1
+  # auth0_flutter: ^2.0.0-beta.1
 
 dev_dependencies:
   flutter_test:
