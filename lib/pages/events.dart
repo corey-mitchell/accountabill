@@ -1,9 +1,6 @@
 import 'package:accountabill/models/calendar_event.dart';
-import 'package:accountabill/models/date_time_builder.dart';
-import 'package:accountabill/models/event_input.dart';
 import 'package:accountabill/widgets/custom_time_picker.dart';
-import 'package:accountabill/widgets/event_dialog.dart';
-import 'package:accountabill/widgets/under_construction.dart';
+import 'package:accountabill/pages/handle_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
@@ -22,36 +19,69 @@ class EventsPage extends StatefulWidget {
 
 class _EventsPageState extends State<EventsPage> {
   static DateTime date = DateTime.now();
-  final List<CalendarEvent> _events = [];
+  final Map<String, CalendarEvent> _events = {};
 
   /// Handle event creation
-  void _createEvent(TimeOfDay time) async {
-    // Show popup
-    final eventInput = await showDialog<EventInput>(
-      context: context,
-      builder: (_) => EventDialog(initialTime: time),
+  void _createEvent(DateTime time) async {
+    final eventInput = await Navigator.push<CalendarEvent>(
+      context,
+      MaterialPageRoute(builder: (_) => HandleEventPage(initialTime: time)),
     );
 
     // Validate user input
-    print(eventInput);
     if (eventInput == null || eventInput.title.isEmpty) return;
-    final start = buildDateTime(date, eventInput.startTime, time);
-    final end = buildDateTime(
-      date,
-      eventInput.endTime,
-      TimeOfDay(hour: (start.hour + 1) % 24, minute: start.minute),
-    );
+    final start = eventInput.start;
+    final end = eventInput.end;
 
     setState(() {
-      _events.add(
-        CalendarEvent(start: start, end: end, title: eventInput.title),
+      final newEvent = CalendarEvent(
+        start: start,
+        end: end,
+        title: eventInput.title,
       );
+      _events[newEvent.id] = newEvent;
     });
 
     // Announce to screen readers that event was successfully created
     SemanticsService.sendAnnouncement(
       View.of(context),
-      "Event created at ${time.format(context)}",
+      "Event created at ${TimeOfDay.fromDateTime(time).format(context)}",
+      TextDirection.ltr,
+    );
+  }
+
+  /// Handle event update
+  void _updateEvent(CalendarEvent event) async {
+    final eventInput = await Navigator.push<CalendarEvent>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HandleEventPage(
+          initialTime: event.start,
+          existingEvent: event,
+          deleteEvent: _deleteEvent,
+        ),
+      ),
+    );
+
+    // Validate user input
+    if (eventInput == null || eventInput.title.isEmpty) return;
+    final start = eventInput.start;
+    final end = eventInput.end;
+
+    setState(() {
+      _events[event.id] = CalendarEvent(
+        start: start,
+        end: end,
+        title: eventInput.title,
+        description: eventInput.description,
+        hasReminderSet: eventInput.hasReminderSet,
+      );
+    });
+
+    // Announce to screen readers that event was successfully updated
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      "Event successfully updated",
       TextDirection.ltr,
     );
   }
@@ -59,7 +89,7 @@ class _EventsPageState extends State<EventsPage> {
   /// Handle event deletion
   void _deleteEvent(CalendarEvent event) {
     setState(() {
-      _events.remove(event);
+      _events.remove(event.id);
     });
 
     // Announce to screen readers that event was successfully deleted
@@ -91,7 +121,7 @@ class _EventsPageState extends State<EventsPage> {
       date: date,
       events: _events,
       createEvent: _createEvent,
-      deleteEvent: _deleteEvent,
+      updateEvent: _updateEvent,
     );
   }
 }
