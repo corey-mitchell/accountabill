@@ -1,4 +1,5 @@
 import 'package:accountabill/models/calendar_event.dart';
+import 'package:accountabill/models/date_time_builder.dart';
 import 'package:accountabill/widgets/under_construction.dart';
 import 'package:flutter/material.dart';
 
@@ -14,9 +15,9 @@ import 'package:flutter/material.dart';
 /// individual events on the timeline (with semantically aware buttons).
 class CustomTimePicker extends StatelessWidget {
   final DateTime date;
-  final List<CalendarEvent> events;
-  final void Function(TimeOfDay time) createEvent;
-  final void Function(CalendarEvent event) deleteEvent;
+  final Map<String, CalendarEvent> events;
+  final void Function(DateTime time) createEvent;
+  final void Function(CalendarEvent event) updateEvent;
   static const double pixelsPerMinute = .75;
   static const double totalHeight = 24 * 60 * pixelsPerMinute;
 
@@ -25,7 +26,7 @@ class CustomTimePicker extends StatelessWidget {
     required this.date,
     required this.events,
     required this.createEvent,
-    required this.deleteEvent,
+    required this.updateEvent,
   });
 
   @override
@@ -78,10 +79,16 @@ class CustomTimePicker extends StatelessWidget {
           child: Semantics(
             button: true,
             label: 'Add event at $time',
-            onTap: () => createEvent(time),
+            onTap: () {
+              final dateTime = timeOfDayToDateTime(date, time);
+              createEvent(dateTime);
+            },
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onTap: () => createEvent(time),
+              onTap: () {
+                final dateTime = timeOfDayToDateTime(date, time);
+                createEvent(dateTime);
+              },
               child: const SizedBox.expand(),
             ),
           ),
@@ -99,7 +106,7 @@ class CustomTimePicker extends StatelessWidget {
     String twoDigit(int value) => value.toString().padLeft(2, '0');
 
     return Stack(
-      children: events.map((event) {
+      children: events.values.map((event) {
         final top = minutesSinceMidnight(event.start) * pixelsPerMinute;
         final height = (event.duration.inMinutes * pixelsPerMinute).clamp(
           0.0,
@@ -116,8 +123,7 @@ class CustomTimePicker extends StatelessWidget {
                 "${event.title}, from ${TimeOfDay.fromDateTime(event.start).format(context)} to ${TimeOfDay.fromDateTime(event.end).format(context)}",
             hint: "Tap to edit",
             child: GestureDetector(
-              // onTap: () => print("Open event editor for ${event.title}"), // TODO: Open event modal
-              onTap: () => deleteEvent(event),
+              onTap: () => updateEvent(event),
               child: Container(
                 padding: EdgeInsets.only(top: 8, left: 16, right: 16),
                 decoration: BoxDecoration(
