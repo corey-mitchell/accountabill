@@ -15,10 +15,18 @@ import 'package:flutter/material.dart';
 class CustomTimePicker extends StatelessWidget {
   final DateTime date;
   final List<CalendarEvent> events;
+  final void Function(TimeOfDay time) createEvent;
+  final void Function(CalendarEvent event) deleteEvent;
   static const double pixelsPerMinute = .75;
   static const double totalHeight = 24 * 60 * pixelsPerMinute;
 
-  const CustomTimePicker({super.key, required this.date, required this.events});
+  const CustomTimePicker({
+    super.key,
+    required this.date,
+    required this.events,
+    required this.createEvent,
+    required this.deleteEvent,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +35,7 @@ class CustomTimePicker extends StatelessWidget {
       label: 'Schedule for $date', // TODO: Format date
       child: SingleChildScrollView(
         padding: EdgeInsets.only(
+          top: 16,
           bottom: MediaQuery.of(context).padding.bottom + 16,
         ),
         child: SizedBox(
@@ -35,7 +44,7 @@ class CustomTimePicker extends StatelessWidget {
             children: [
               _buildGrid(), // decorative
               _buildTimeSlots(), // target tracking
-              _buildEvents(), // semantic buttons
+              _buildEvents(context), // semantic buttons
             ],
           ),
         ),
@@ -46,12 +55,9 @@ class CustomTimePicker extends StatelessWidget {
   /// A decorative layer for drawing calendar appearance
   Widget _buildGrid() {
     return ExcludeSemantics(
-      child: Container(
-        padding: EdgeInsets.only(top: 16),
-        child: CustomPaint(
-          size: Size(double.infinity, totalHeight),
-          painter: _GridPainter(pixelsPerMinute),
-        ),
+      child: CustomPaint(
+        size: Size(double.infinity, totalHeight),
+        painter: _GridPainter(pixelsPerMinute),
       ),
     );
   }
@@ -72,12 +78,10 @@ class CustomTimePicker extends StatelessWidget {
           child: Semantics(
             button: true,
             label: 'Add event at $time',
-            onTap: () =>
-                print('Open time editor $time'), // TODO: Open time editor
+            onTap: () => createEvent(time),
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onTap: () =>
-                  print('Open time editor $time'), // TODO: Open time editor
+              onTap: () => createEvent(time),
               child: const SizedBox.expand(),
             ),
           ),
@@ -86,18 +90,60 @@ class CustomTimePicker extends StatelessWidget {
     );
   }
 
-  Widget _buildEvents() {
+  // An event layer for adding events to the timeline
+  Widget _buildEvents(BuildContext context) {
+    double minutesSinceMidnight(DateTime dt) {
+      return dt.hour * 60 + dt.minute + dt.second / 60 + dt.millisecond / 60000;
+    }
+
+    String twoDigit(int value) => value.toString().padLeft(2, '0');
+
     return Stack(
-      children: [],
-      // children: events.map((event) => {
-      //   return Positioned(
-      //     top: 0,
-      //     left: 60,
-      //     right: 8,
-      //     height: totalHeight,
-      //     child: Semantics(),
-      //   )
-      // }).toList(),
+      children: events.map((event) {
+        final top = minutesSinceMidnight(event.start) * pixelsPerMinute;
+        final height = (event.duration.inMinutes * pixelsPerMinute).clamp(
+          0.0,
+          double.infinity,
+        );
+        return Positioned(
+          top: top,
+          left: 60,
+          right: 8,
+          height: height,
+          child: Semantics(
+            button: true,
+            label:
+                "${event.title}, from ${TimeOfDay.fromDateTime(event.start).format(context)} to ${TimeOfDay.fromDateTime(event.end).format(context)}",
+            hint: "Tap to edit",
+            child: GestureDetector(
+              // onTap: () => print("Open event editor for ${event.title}"), // TODO: Open event modal
+              onTap: () => deleteEvent(event),
+              child: Container(
+                padding: EdgeInsets.only(top: 8, left: 16, right: 16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.inversePrimary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${event.start.hour}:${twoDigit(event.start.minute)}-${event.end.hour}:${twoDigit(event.end.minute)}',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                    Text(
+                      event.title,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
