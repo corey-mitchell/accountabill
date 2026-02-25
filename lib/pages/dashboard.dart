@@ -40,38 +40,42 @@ class DashboardPage extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
-        spacing: 32,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [CompletionRate(), MoneyDonated()],
-          ),
-
-          Container(
-            width: double.infinity, // consume full width
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Theme.of(context).colorScheme.inverseSurface,
-              ),
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
+          Expanded(
             child: Column(
-              spacing: 16,
+              spacing: 32,
               children: [
-                Text(
-                  "Words of encouragement:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [CompletionRate(), MoneyDonated()],
                 ),
-                Text(
-                  "Lorem ipsum dolor sit amet, consectetur adipisicing elif.",
-                  textAlign: TextAlign.center,
+
+                Container(
+                  width: double.infinity, // consume full width
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.inverseSurface,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                  child: Column(
+                    spacing: 16,
+                    children: [
+                      Text(
+                        "Words of encouragement:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        "Lorem ipsum dolor sit amet, consectetur adipisicing elif.",
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-
-          Spacer(), // Push button to the bottom
           Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).padding.bottom,

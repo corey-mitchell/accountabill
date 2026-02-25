@@ -1,6 +1,5 @@
 import 'package:accountabill/models/calendar_event.dart';
-import 'package:accountabill/models/date_time_builder.dart';
-import 'package:accountabill/widgets/under_construction.dart';
+import 'package:accountabill/utils/date_time_builder.dart';
 import 'package:flutter/material.dart';
 
 /// Custom Time Picker component
@@ -13,6 +12,12 @@ import 'package:flutter/material.dart';
 /// three layers. A decorative layer for drawing evenly spaced lines, a
 /// logical semantic layer for target tracking and an event layer for tracking
 /// individual events on the timeline (with semantically aware buttons).
+///
+/// @param DateTime date;
+/// @param Map<String, CalendarEvent> events;
+/// @param void Function(DateTime time) createEvent;
+/// @param void Function(CalendarEvent event) updateEvent;
+/// @return StatelessWidget;
 class CustomTimePicker extends StatelessWidget {
   final DateTime date;
   final Map<String, CalendarEvent> events;
@@ -78,7 +83,7 @@ class CustomTimePicker extends StatelessWidget {
           height: 30 * pixelsPerMinute,
           child: Semantics(
             button: true,
-            label: 'Add event at $time',
+            label: 'Add event at ${formatHour(time)}',
             onTap: () {
               final dateTime = timeOfDayToDateTime(date, time);
               createEvent(dateTime);
@@ -103,8 +108,6 @@ class CustomTimePicker extends StatelessWidget {
       return dt.hour * 60 + dt.minute + dt.second / 60 + dt.millisecond / 60000;
     }
 
-    String twoDigit(int value) => value.toString().padLeft(2, '0');
-
     return Stack(
       children: events.values.map((event) {
         final top = minutesSinceMidnight(event.start) * pixelsPerMinute;
@@ -112,6 +115,8 @@ class CustomTimePicker extends StatelessWidget {
           0.0,
           double.infinity,
         );
+        final start = formatHour(TimeOfDay.fromDateTime(event.start));
+        final end = formatHour(TimeOfDay.fromDateTime(event.end));
         return Positioned(
           top: top,
           left: 60,
@@ -119,8 +124,7 @@ class CustomTimePicker extends StatelessWidget {
           height: height,
           child: Semantics(
             button: true,
-            label:
-                "${event.title}, from ${TimeOfDay.fromDateTime(event.start).format(context)} to ${TimeOfDay.fromDateTime(event.end).format(context)}",
+            label: "${event.title}, from $start to $end",
             hint: "Tap to edit",
             child: GestureDetector(
               onTap: () => updateEvent(event),
@@ -134,7 +138,7 @@ class CustomTimePicker extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${event.start.hour}:${twoDigit(event.start.minute)}-${event.end.hour}:${twoDigit(event.end.minute)}',
+                      '$start-$end',
                       textAlign: TextAlign.left,
                       style: TextStyle(color: Colors.white70),
                     ),
@@ -156,7 +160,7 @@ class CustomTimePicker extends StatelessWidget {
 
 /// Create a custom painter class for drawing grid lines and time
 ///
-/// @param pixelsPerMinute<double>
+/// @param double pixelsPerMinute
 class _GridPainter extends CustomPainter {
   final double pixelsPerMinute;
 
@@ -182,7 +186,7 @@ class _GridPainter extends CustomPainter {
       if (isHour && halfHour != 48) {
         final hour = halfHour ~/ 2;
         final time = TimeOfDay(hour: hour, minute: 0);
-        final formatted = _formatHour(time);
+        final formatted = formatHour(time);
         final textSpan = TextSpan(text: formatted, style: textStyle);
 
         final textPainter = TextPainter(
@@ -193,12 +197,6 @@ class _GridPainter extends CustomPainter {
         textPainter.paint(canvas, Offset(16, y - textPainter.height / 2));
       }
     }
-  }
-
-  String _formatHour(TimeOfDay time) {
-    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-    final period = time.period == DayPeriod.am ? "AM" : "PM";
-    return "$hour $period";
   }
 
   @override

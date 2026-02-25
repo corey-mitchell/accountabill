@@ -38,6 +38,8 @@ class _EventsPageState extends State<EventsPage> {
         start: start,
         end: end,
         title: eventInput.title,
+        description: eventInput.description,
+        hasReminderSet: eventInput.hasReminderSet,
       );
       _events[newEvent.id] = newEvent;
     });
