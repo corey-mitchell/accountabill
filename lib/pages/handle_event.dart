@@ -1,10 +1,24 @@
 import 'package:accountabill/models/calendar_event.dart';
-import 'package:accountabill/models/date_time_builder.dart';
+import 'package:accountabill/utils/date_time_builder.dart';
 import 'package:flutter/material.dart';
 
-/// This creates a dialog widget which will allow the user to add event details
+/// This page is used for creating, editing and deleting events off of the
+/// custom time picker.
 ///
-/// A stateful component which accepts an initial time for creating events at the selected time.
+/// Takes in a DateTime object for determining the default values of the start
+/// and end times. The default start time will be the time selected on the
+/// calendar, the default end time will be one hour after the time selected.
+///
+/// Takes in an optional CalendarEvent object. If this object is not provided,
+/// we will use the create mode. If the object is provided, we will pre-populate
+/// the page with this object's values and consider the page in edit mode.
+///
+/// If using this in create mode, you must also pass in a deleteEvent function. This function
+/// will handle removing the event from the timeline and can be found.
+///
+/// @param DateTime initialTime;
+/// @param CalendarEvent? existingEvent;
+/// @param void Function(CalendarEvent event)? deleteEvent;
 class HandleEventPage extends StatefulWidget {
   final DateTime initialTime;
   final CalendarEvent? existingEvent; // null = create mode
@@ -22,30 +36,39 @@ class HandleEventPage extends StatefulWidget {
 }
 
 class _HandleEventPageState extends State<HandleEventPage> {
-  String? title;
   DateTime? selectedStartTime;
   DateTime? selectedEndTime;
-  String? description;
   bool hasReminderSet = false;
   final _titleController = TextEditingController();
   final _startController = TextEditingController();
   final _endController = TextEditingController();
+  final _descriptionController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   /// Initialize state
+  @override
   void initState() {
     super.initState();
-
     if (widget.isEditing) {
-      _titleController.text = widget.existingEvent!.title;
       selectedStartTime = widget.existingEvent!.start;
       selectedEndTime = widget.existingEvent!.end;
-      description = widget.existingEvent!.description;
-
-      _startController.text = widget.existingEvent!.start.toString();
-      _endController.text = widget.existingEvent!.end.toString();
+      _titleController.text = widget.existingEvent!.title;
+      _startController.text = formatHour(
+        TimeOfDay.fromDateTime(selectedStartTime!),
+      );
+      _endController.text = formatHour(
+        TimeOfDay.fromDateTime(selectedEndTime!),
+      );
+      _descriptionController.text = widget.existingEvent?.description ?? '';
     } else {
       selectedStartTime = widget.initialTime;
+      selectedEndTime = widget.initialTime.add(Duration(hours: 1));
+      _startController.text = formatHour(
+        TimeOfDay.fromDateTime(selectedStartTime!),
+      );
+      _endController.text = formatHour(
+        TimeOfDay.fromDateTime(selectedEndTime!),
+      );
     }
   }
 
@@ -67,146 +90,166 @@ class _HandleEventPageState extends State<HandleEventPage> {
   Widget _buildUI(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        autovalidateMode: AutovalidateMode.disabled,
+      child: SafeArea(
         child: Column(
-          spacing: 16,
           children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Event name',
+            Expanded(
+              child: Form(
+                key: _formKey,
+                autovalidateMode: AutovalidateMode.disabled,
+                child: Column(
+                  spacing: 16,
+                  children: [
+                    TextFormField(
+                      controller: _titleController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Event name',
+                      ),
+                      validator: (String? value) {
+                        return (value == null || value.trim().isEmpty)
+                            ? 'Value cannot be empty'
+                            : null;
+                      },
+                    ),
+                    Row(
+                      spacing: 16,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: TextFormField(
+                            controller: _startController,
+                            readOnly: true,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Start time',
+                            ),
+                            validator: (String? value) {
+                              return (value == null || value.trim().isEmpty)
+                                  ? 'Value cannot be empty'
+                                  : null;
+                            },
+                            onTap: () {
+                              _pickTime(
+                                context,
+                                _startController,
+                                (time) =>
+                                    setState(() => selectedStartTime = time),
+                              );
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: TextFormField(
+                            controller: _endController,
+                            readOnly: true,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'End time',
+                            ),
+                            validator: (String? value) {
+                              return (value == null || value.trim().isEmpty)
+                                  ? 'Value cannot be empty'
+                                  : null;
+                            },
+                            onTap: () {
+                              _pickTime(
+                                context,
+                                _endController,
+                                (time) =>
+                                    setState(() => selectedEndTime = time),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextFormField(
+                      controller: _descriptionController,
+                      maxLines: null,
+                      minLines: 3,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Description',
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    // CheckboxListTile(
+                    //   title: const Text("Remind me"),
+                    //   activeColor: Theme.of(context).colorScheme.inversePrimary,
+                    //   controlAffinity: ListTileControlAffinity.leading,
+                    //   value: hasReminderSet,
+                    //   onChanged: (bool? value) {
+                    //     setState(() {
+                    //       hasReminderSet = value ?? false;
+                    //     });
+                    //   },
+                    // ), // TODO: Handle reminders and recurring events
+                  ],
+                ),
               ),
-              validator: (String? value) {
-                return (value == null || value.trim().isEmpty)
-                    ? 'Value cannot be empty'
-                    : null;
-              },
             ),
-            Row(
-              spacing: 16,
+            Column(
               children: [
-                Expanded(
-                  flex: 1,
-                  child: TextFormField(
-                    controller: _startController,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Start time',
-                    ),
-                    validator: (String? value) {
-                      return (value == null || value.trim().isEmpty)
-                          ? 'Value cannot be empty'
-                          : null;
-                    },
-                    onTap: () {
-                      _pickTime(
-                        context,
-                        _startController,
-                        (time) => setState(() => selectedStartTime = time),
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: TextFormField(
-                    controller: _endController,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'End time',
-                    ),
-                    validator: (String? value) {
-                      return (value == null || value.trim().isEmpty)
-                          ? 'Value cannot be empty'
-                          : null;
-                    },
-                    onTap: () {
-                      _pickTime(
-                        context,
-                        _endController,
-                        (time) => setState(() => selectedEndTime = time),
-                      );
-                    },
-                  ),
-                ),
+                _buildSaveButton(),
+                if (widget.isEditing) _buildDeleteButton(),
               ],
             ),
-            TextFormField(
-              maxLines: null,
-              minLines: 3,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Description',
-                alignLabelWithHint: true,
-              ),
-            ),
-            CheckboxListTile(
-              title: const Text("Is recurring"),
-              activeColor: Theme.of(context).colorScheme.inversePrimary,
-              controlAffinity: ListTileControlAffinity.leading,
-              value: hasReminderSet,
-              onChanged: (bool? value) {
-                setState(() {
-                  hasReminderSet = value ?? false;
-                });
-              },
-            ),
-            const Spacer(), // Push button to the bottom
-            Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).padding.bottom,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (!_formKey.currentState!.validate()) {
-                      return; // Stop if invalid
-                    }
-                    final start = selectedStartTime ?? widget.initialTime;
-                    final end =
-                        selectedEndTime ??
-                        selectedStartTime!.add(Duration(hours: 1));
-                    Navigator.pop(
-                      context,
-                      CalendarEvent(
-                        title: _titleController.text.trim(),
-                        start: start,
-                        end: end,
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.inversePrimary,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(widget.isEditing ? "Update" : "Save"),
-                ),
-              ),
-            ),
-            if (widget.isEditing)
-              Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).padding.bottom,
-                ),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () {
-                    print("Delete event ${widget.existingEvent!.title}");
-                    widget.deleteEvent?.call(widget.existingEvent!);
-                  },
-                  child: const Text("Delete Task"),
-                ),
-              ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: () {
+          if (!_formKey.currentState!.validate()) {
+            return; // Stop if invalid
+          }
+          final start = selectedStartTime ?? widget.initialTime;
+          final end =
+              selectedEndTime ?? selectedStartTime!.add(Duration(hours: 1));
+          Navigator.pop(
+            context,
+            CalendarEvent(
+              title: _titleController.text.trim(),
+              start: start,
+              end: end,
+              description: _descriptionController.text.trim(),
+              hasReminderSet: hasReminderSet,
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          foregroundColor: Colors.white,
+        ),
+        child: Text(widget.isEditing ? "Update" : "Save"),
+      ),
+    );
+  }
+
+  Widget _buildDeleteButton() {
+    return Padding(
+      padding: EdgeInsets.only(top: 16),
+      child: SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: ElevatedButton(
+          onPressed: () {
+            widget.deleteEvent?.call(widget.existingEvent!);
+            Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          child: Text("Delete"),
         ),
       ),
     );
@@ -220,7 +263,7 @@ class _HandleEventPageState extends State<HandleEventPage> {
   ) async {
     final time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(widget.initialTime),
+      initialTime: parseTimeOfDay(controller.text),
     );
 
     if (time != null) {
