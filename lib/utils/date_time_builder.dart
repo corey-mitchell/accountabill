@@ -1,5 +1,20 @@
 import 'package:flutter/material.dart';
 
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
 /// Helper method for converting TimeOfDay to DateTime
 DateTime timeOfDayToDateTime(DateTime date, TimeOfDay time) {
   return DateTime(date.year, date.month, date.day, time.hour, time.minute);
@@ -38,4 +53,13 @@ TimeOfDay parseTimeOfDay(String input) {
   }
 
   return TimeOfDay(hour: hour, minute: minute);
+}
+
+/// Helper function for formatting a DateTime object to MMM. dd, yyyy string
+String formatDate(DateTime date) {
+  final month = months[date.month - 1];
+  final day = date.day.toString().padLeft(2, '0');
+  final year = date.year;
+
+  return "$month. $day, $year";
 }
