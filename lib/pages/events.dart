@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:accountabill/data/models/calendar_event.dart';
 import 'package:accountabill/data/repositories/event_repository.dart';
 import 'package:accountabill/widgets/custom_date_picker.dart';
@@ -9,7 +6,6 @@ import 'package:accountabill/pages/handle_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// User events page
 ///
@@ -34,7 +30,6 @@ class _EventsPageState extends State<EventsPage> {
   static DateTime date = DateTime.now();
   Map<String, CalendarEvent> _events = {};
   int pageIndex = 0;
-  // static const String fileName = 'assets/database.json';
   final EventRepository _repository = EventRepository();
 
   @override
