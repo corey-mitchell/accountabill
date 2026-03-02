@@ -192,27 +192,50 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
             hint: "Tap to edit",
             child: GestureDetector(
               onTap: () => widget.updateEvent(event),
-              child: Container(
-                padding: EdgeInsets.only(top: 8, left: 16, right: 16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.inversePrimary,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$start-$end',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(color: Colors.white70),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final elementHeight = constraints.maxHeight;
+                  const minHeightForTitle = 24;
+                  const minHeightForFull = 40;
+                  final showFull = elementHeight >= minHeightForFull;
+                  final showTitleOnly = elementHeight >= minHeightForTitle;
+                  return Container(
+                    padding: EdgeInsets.fromLTRB(16, 4, 16, 4),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.inversePrimary,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    Text(
-                      event.title,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(color: Colors.white70),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (showFull)
+                          Text(
+                            '$start-$end',
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              height: 1.0,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        if (showTitleOnly)
+                          Text(
+                            event.title,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 16,
+                              height: 1.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ),
