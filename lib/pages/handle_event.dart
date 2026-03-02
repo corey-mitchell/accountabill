@@ -1,4 +1,4 @@
-import 'package:accountabill/models/calendar_event.dart';
+import 'package:accountabill/data/models/calendar_event.dart';
 import 'package:accountabill/utils/date_time_builder.dart';
 import 'package:flutter/material.dart';
 
@@ -217,6 +217,7 @@ class _HandleEventPageState extends State<HandleEventPage> {
           Navigator.pop(
             context,
             CalendarEvent(
+              id: widget.existingEvent?.id,
               title: _titleController.text.trim(),
               start: start,
               end: end,

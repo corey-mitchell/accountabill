@@ -1,16 +1,28 @@
-import 'package:accountabill/models/calendar_event.dart';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:accountabill/data/models/calendar_event.dart';
+import 'package:accountabill/data/repositories/event_repository.dart';
 import 'package:accountabill/widgets/custom_date_picker.dart';
 import 'package:accountabill/widgets/custom_time_picker.dart';
 import 'package:accountabill/pages/handle_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// User events page
 ///
-/// 🚧 Currently under construction 🚧
-///
 /// This is where the user will be able to see and
-/// edit their events on a calendar component
+/// edit their events on a calendar component.
+///
+/// TODOs:
+///  1. Handle saving and deleting events in local storage (and then in long term storage)
+///  2. Handle catch/fail/error cases
+///  3. Handle recurring events and notification settings
+///
+/// Current know issues:
+///  1. The left and right buttons do not fire the swipe animation
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
 
@@ -20,8 +32,24 @@ class EventsPage extends StatefulWidget {
 
 class _EventsPageState extends State<EventsPage> {
   static DateTime date = DateTime.now();
-  final Map<String, CalendarEvent> _events = {};
+  Map<String, CalendarEvent> _events = {};
   int pageIndex = 0;
+  // static const String fileName = 'assets/database.json';
+  final EventRepository _repository = EventRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeEvents();
+  }
+
+  // Read events from local DB into state
+  void _initializeEvents() async {
+    final loadedEvents = await _repository.loadEvents();
+    setState(() {
+      _events = loadedEvents;
+    });
+  }
 
   /// Handle setting the date object
   void _setDate(DateTime newDate) {
@@ -42,7 +70,7 @@ class _EventsPageState extends State<EventsPage> {
     _setPageIndex(pageIndex - 1);
   }
 
-  /// Handle setting calendar page index
+  /// Handle directly setting calendar page index
   void _setPageIndex(int index) {
     setState(() {
       pageIndex = index;
@@ -58,29 +86,20 @@ class _EventsPageState extends State<EventsPage> {
 
     // Validate user input
     if (eventInput == null || eventInput.title.isEmpty) return;
-    final start = eventInput.start;
-    final end = eventInput.end;
-    final newEvent = CalendarEvent(
-      start: start,
-      end: end,
-      title: eventInput.title,
-      description: eventInput.description,
-      hasReminderSet: eventInput.hasReminderSet,
-    );
+    final CalendarEvent? newEvent = await _repository.createEvent(eventInput);
+    if (newEvent != null) {
+      // Update UI
+      setState(() {
+        _events[newEvent.id] = newEvent;
+      });
 
-    // TODO: Add event to storage
-
-    // Update UI
-    setState(() {
-      _events[newEvent.id] = newEvent;
-    });
-
-    // Announce to screen readers that event was successfully created
-    SemanticsService.sendAnnouncement(
-      View.of(context),
-      "Event created at ${TimeOfDay.fromDateTime(time).format(context)}",
-      TextDirection.ltr,
-    );
+      // Announce to screen readers that event was successfully created
+      SemanticsService.sendAnnouncement(
+        View.of(context),
+        "Event created at ${TimeOfDay.fromDateTime(time).format(context)}",
+        TextDirection.ltr,
+      );
+    }
   }
 
   /// Handle event update
@@ -98,45 +117,41 @@ class _EventsPageState extends State<EventsPage> {
 
     // Validate user input
     if (eventInput == null || eventInput.title.isEmpty) return;
-    final start = eventInput.start;
-    final end = eventInput.end;
-
-    // TODO: Update event in storage
-
-    // Update UI
-    setState(() {
-      _events[event.id] = CalendarEvent(
-        start: start,
-        end: end,
-        title: eventInput.title,
-        description: eventInput.description,
-        hasReminderSet: eventInput.hasReminderSet,
-      );
-    });
-
-    // Announce to screen readers that event was successfully updated
-    SemanticsService.sendAnnouncement(
-      View.of(context),
-      "Event successfully updated",
-      TextDirection.ltr,
+    final CalendarEvent? updatedEvent = await _repository.updateEvent(
+      eventInput,
     );
+    if (updatedEvent != null) {
+      // Update UI
+      setState(() {
+        _events[event.id] = updatedEvent;
+      });
+
+      // Announce to screen readers that event was successfully updated
+      SemanticsService.sendAnnouncement(
+        View.of(context),
+        "Event successfully updated",
+        TextDirection.ltr,
+      );
+    }
   }
 
   /// Handle event deletion
-  void _deleteEvent(CalendarEvent event) {
-    // TODO: Delete event from storage
+  void _deleteEvent(CalendarEvent event) async {
+    // Delete event from storage
+    final bool deleted = await _repository.deleteEvent(event);
+    if (deleted) {
+      // Update UI
+      setState(() {
+        _events.remove(event.id);
+      });
 
-    // Update UI
-    setState(() {
-      _events.remove(event.id);
-    });
-
-    // Announce to screen readers that event was successfully deleted
-    SemanticsService.sendAnnouncement(
-      View.of(context),
-      "Event successfully deleted",
-      TextDirection.ltr,
-    );
+      // Announce to screen readers that event was successfully deleted
+      SemanticsService.sendAnnouncement(
+        View.of(context),
+        "Event successfully deleted",
+        TextDirection.ltr,
+      );
+    }
   }
 
   /// Page scaffold
