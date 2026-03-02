@@ -13,7 +13,7 @@ import 'package:flutter/services.dart';
 /// edit their events on a calendar component.
 ///
 /// TODOs:
-///  1. Handle saving and deleting events in local storage (and then in long term storage)
+///  1. Handle saving and deleting events  in long term storage
 ///  2. Handle catch/fail/error cases
 ///  3. Handle recurring events and notification settings
 ///
@@ -29,12 +29,16 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> {
   static DateTime date = DateTime.now();
   Map<String, CalendarEvent> _events = {};
-  int pageIndex = 0;
+  // Make a base date way in the past to avoid negative page index numbers
+  DateTime baseDate = DateTime(1900, 1, 1);
+  int get pageIndex => date.difference(baseDate).inDays;
   final EventRepository _repository = EventRepository();
+  late final PageController pageController;
 
   @override
   void initState() {
     super.initState();
+    pageController = PageController(initialPage: pageIndex);
     _initializeEvents();
   }
 
@@ -51,25 +55,22 @@ class _EventsPageState extends State<EventsPage> {
     setState(() {
       date = newDate;
     });
+
+    pageController.animateToPage(
+      pageIndex,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   /// Handle progressing the date by one day
   void _nextDay() {
     _setDate(date.add(const Duration(days: 1)));
-    _setPageIndex(pageIndex + 1);
   }
 
-  /// Handle regressing the date by one day
+  // /// Handle regressing the date by one day
   void _prevDay() {
     _setDate(date.subtract(const Duration(days: 1)));
-    _setPageIndex(pageIndex - 1);
-  }
-
-  /// Handle directly setting calendar page index
-  void _setPageIndex(int index) {
-    setState(() {
-      pageIndex = index;
-    });
   }
 
   /// Handle event creation
@@ -178,10 +179,9 @@ class _EventsPageState extends State<EventsPage> {
           child: CustomTimePicker(
             date: date,
             events: _events,
-            pageIndex: pageIndex,
-            setPageIndex: _setPageIndex,
-            nextDay: _nextDay,
-            prevDay: _prevDay,
+            pageController: pageController,
+            baseDate: baseDate,
+            setDate: _setDate,
             createEvent: _createEvent,
             updateEvent: _updateEvent,
           ),
