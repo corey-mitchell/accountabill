@@ -38,6 +38,12 @@ dependencies:
   # The following adds charts for data visualizations
   fl_chart: ^1.1.1
 
+  # The following adds in path support for handling local files
+  path_provider: ^2.1.5
+
+  # The following provides unique ids for object instances
+  uuid: ^4.3.3
+
   # The following is for the Auth0 Flutter SDK
   # This is used for handling authentication services
   # auth0_flutter: ^2.0.0-beta.1
@@ -64,9 +70,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/database.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
