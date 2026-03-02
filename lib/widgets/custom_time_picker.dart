@@ -17,44 +17,103 @@ import 'package:flutter/material.dart';
 /// @param Map<String, CalendarEvent> events;
 /// @param void Function(DateTime time) createEvent;
 /// @param void Function(CalendarEvent event) updateEvent;
+/// @param void Function() nextDay;
+/// @param void Function() prevDay;
 /// @return StatelessWidget;
-class CustomTimePicker extends StatelessWidget {
+class CustomTimePicker extends StatefulWidget {
   final DateTime date;
   final Map<String, CalendarEvent> events;
+  final int pageIndex;
+  final void Function(int index) setPageIndex;
   final void Function(DateTime time) createEvent;
   final void Function(CalendarEvent event) updateEvent;
-  static const double pixelsPerMinute = .75;
-  static const double totalHeight = 24 * 60 * pixelsPerMinute;
+  final void Function() nextDay;
+  final void Function() prevDay;
 
   const CustomTimePicker({
     super.key,
     required this.date,
     required this.events,
+    required this.pageIndex,
+    required this.setPageIndex,
     required this.createEvent,
     required this.updateEvent,
+    required this.nextDay,
+    required this.prevDay,
   });
 
   @override
+  State<CustomTimePicker> createState() => _CustomTimePickerState();
+}
+
+class _CustomTimePickerState extends State<CustomTimePicker> {
+  static const double pixelsPerMinute = .75;
+  static const double totalHeight = 24 * 60 * pixelsPerMinute;
+  late final PageController _pageController;
+
+  /// Handle initializing state for page controller
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.pageIndex);
+  }
+
+  /// Dispose of page controller to prevent memory leaks
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  /// Handle did update life cycle for triggering page animation from sibling component
+  /// Currently causing issues
+  //   @override
+  //   void didUpdateWidget(covariant CustomTimePicker oldWidget) {
+  //     super.didUpdateWidget(oldWidget);
+
+  //     if (oldWidget.pageIndex != widget.pageIndex) {
+  //       _pageController.animateToPage(
+  //         widget.pageIndex,
+  //         duration: const Duration(milliseconds: 300),
+  //         curve: Curves.easeOutCubic,
+  //       );
+  //     }
+  //   }
+
+  @override
   Widget build(BuildContext context) {
-    return Semantics(
-      container: true,
-      label: 'Schedule for $date', // TODO: Format date
-      child: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          top: 16,
-          bottom: MediaQuery.of(context).padding.bottom + 16,
-        ),
-        child: SizedBox(
-          height: totalHeight,
-          child: Stack(
-            children: [
-              _buildGrid(), // decorative
-              _buildTimeSlots(), // target tracking
-              _buildEvents(context), // semantic buttons
-            ],
+    return PageView.builder(
+      controller: _pageController,
+      onPageChanged: (index) {
+        if (index > widget.pageIndex) {
+          widget.nextDay();
+        } else {
+          widget.prevDay();
+        }
+        widget.setPageIndex(index);
+      },
+      itemBuilder: (context, index) {
+        return Semantics(
+          container: true,
+          label: 'Schedule for ${formatDate(widget.date)}',
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              top: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+            ),
+            child: SizedBox(
+              height: totalHeight,
+              child: Stack(
+                children: [
+                  _buildGrid(), // decorative
+                  _buildTimeSlots(), // target tracking
+                  _buildEvents(context), // semantic buttons
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -85,14 +144,14 @@ class CustomTimePicker extends StatelessWidget {
             button: true,
             label: 'Add event at ${formatHour(time)}',
             onTap: () {
-              final dateTime = timeOfDayToDateTime(date, time);
-              createEvent(dateTime);
+              final dateTime = timeOfDayToDateTime(widget.date, time);
+              widget.createEvent(dateTime);
             },
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: () {
-                final dateTime = timeOfDayToDateTime(date, time);
-                createEvent(dateTime);
+                final dateTime = timeOfDayToDateTime(widget.date, time);
+                widget.createEvent(dateTime);
               },
               child: const SizedBox.expand(),
             ),
@@ -107,6 +166,9 @@ class CustomTimePicker extends StatelessWidget {
     double minutesSinceMidnight(DateTime dt) {
       return dt.hour * 60 + dt.minute + dt.second / 60 + dt.millisecond / 60000;
     }
+
+    final Map<String, CalendarEvent> events = widget.events;
+    events.removeWhere((key, value) => value.start.day != widget.date.day);
 
     return Stack(
       children: events.values.map((event) {
@@ -127,7 +189,7 @@ class CustomTimePicker extends StatelessWidget {
             label: "${event.title}, from $start to $end",
             hint: "Tap to edit",
             child: GestureDetector(
-              onTap: () => updateEvent(event),
+              onTap: () => widget.updateEvent(event),
               child: Container(
                 padding: EdgeInsets.only(top: 8, left: 16, right: 16),
                 decoration: BoxDecoration(
@@ -169,8 +231,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors
-          .black45 // TODO: Update to be theme aware
+      ..color = Colors.black45
       ..strokeWidth = 2;
 
     final textStyle = const TextStyle(color: Colors.black45, fontSize: 12);

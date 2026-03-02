@@ -1,4 +1,5 @@
 import 'package:accountabill/models/calendar_event.dart';
+import 'package:accountabill/widgets/custom_date_picker.dart';
 import 'package:accountabill/widgets/custom_time_picker.dart';
 import 'package:accountabill/pages/handle_event.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,33 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> {
   static DateTime date = DateTime.now();
   final Map<String, CalendarEvent> _events = {};
+  int pageIndex = 0;
+
+  /// Handle setting the date object
+  void _setDate(DateTime newDate) {
+    setState(() {
+      date = newDate;
+    });
+  }
+
+  /// Handle progressing the date by one day
+  void _nextDay() {
+    _setDate(date.add(const Duration(days: 1)));
+    _setPageIndex(pageIndex + 1);
+  }
+
+  /// Handle regressing the date by one day
+  void _prevDay() {
+    _setDate(date.subtract(const Duration(days: 1)));
+    _setPageIndex(pageIndex - 1);
+  }
+
+  /// Handle setting calendar page index
+  void _setPageIndex(int index) {
+    setState(() {
+      pageIndex = index;
+    });
+  }
 
   /// Handle event creation
   void _createEvent(DateTime time) async {
@@ -32,15 +60,18 @@ class _EventsPageState extends State<EventsPage> {
     if (eventInput == null || eventInput.title.isEmpty) return;
     final start = eventInput.start;
     final end = eventInput.end;
+    final newEvent = CalendarEvent(
+      start: start,
+      end: end,
+      title: eventInput.title,
+      description: eventInput.description,
+      hasReminderSet: eventInput.hasReminderSet,
+    );
 
+    // TODO: Add event to storage
+
+    // Update UI
     setState(() {
-      final newEvent = CalendarEvent(
-        start: start,
-        end: end,
-        title: eventInput.title,
-        description: eventInput.description,
-        hasReminderSet: eventInput.hasReminderSet,
-      );
       _events[newEvent.id] = newEvent;
     });
 
@@ -70,6 +101,9 @@ class _EventsPageState extends State<EventsPage> {
     final start = eventInput.start;
     final end = eventInput.end;
 
+    // TODO: Update event in storage
+
+    // Update UI
     setState(() {
       _events[event.id] = CalendarEvent(
         start: start,
@@ -90,6 +124,9 @@ class _EventsPageState extends State<EventsPage> {
 
   /// Handle event deletion
   void _deleteEvent(CalendarEvent event) {
+    // TODO: Delete event from storage
+
+    // Update UI
     setState(() {
       _events.remove(event.id);
     });
@@ -119,11 +156,27 @@ class _EventsPageState extends State<EventsPage> {
 
   /// Page UI main widget
   Widget _buildUI(BuildContext context) {
-    return CustomTimePicker(
-      date: date,
-      events: _events,
-      createEvent: _createEvent,
-      updateEvent: _updateEvent,
+    return Column(
+      children: [
+        CustomDatePicker(
+          date: date,
+          setDate: _setDate,
+          nextDay: _nextDay,
+          prevDay: _prevDay,
+        ),
+        Expanded(
+          child: CustomTimePicker(
+            date: date,
+            events: _events,
+            pageIndex: pageIndex,
+            setPageIndex: _setPageIndex,
+            nextDay: _nextDay,
+            prevDay: _prevDay,
+            createEvent: _createEvent,
+            updateEvent: _updateEvent,
+          ),
+        ),
+      ],
     );
   }
 }
