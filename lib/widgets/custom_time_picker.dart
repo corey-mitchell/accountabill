@@ -167,11 +167,13 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
       return dt.hour * 60 + dt.minute + dt.second / 60 + dt.millisecond / 60000;
     }
 
-    final Map<String, CalendarEvent> events = widget.events;
-    events.removeWhere((key, value) => value.start.day != widget.date.day);
+    // Filter out events from other days
+    final List<CalendarEvent> filteredEvents = widget.events.values
+        .where((event) => event.start.day == widget.date.day)
+        .toList();
 
     return Stack(
-      children: events.values.map((event) {
+      children: filteredEvents.map((event) {
         final top = minutesSinceMidnight(event.start) * pixelsPerMinute;
         final height = (event.duration.inMinutes * pixelsPerMinute).clamp(
           0.0,
