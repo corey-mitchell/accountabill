@@ -24,20 +24,18 @@ class CustomTimePicker extends StatelessWidget {
   final DateTime date;
   final Map<String, CalendarEvent> events;
   final PageController pageController;
-  final DateTime baseDate;
   final void Function(DateTime time) createEvent;
   final void Function(CalendarEvent event) updateEvent;
-  final void Function(DateTime date) setDate;
+  final void Function(int index) handlePageSwipe;
 
   const CustomTimePicker({
     super.key,
     required this.date,
     required this.events,
     required this.pageController,
-    required this.baseDate,
     required this.createEvent,
     required this.updateEvent,
-    required this.setDate,
+    required this.handlePageSwipe,
   });
 
   static const double pixelsPerMinute = .75;
@@ -47,9 +45,7 @@ class CustomTimePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageView.builder(
       controller: pageController,
-      onPageChanged: (index) {
-        setDate(baseDate.add(Duration(days: index)));
-      },
+      onPageChanged: handlePageSwipe,
       itemBuilder: (context, index) {
         return Semantics(
           container: true,

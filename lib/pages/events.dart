@@ -5,7 +5,6 @@ import 'package:accountabill/widgets/custom_time_picker.dart';
 import 'package:accountabill/pages/handle_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 
 /// User events page
 ///
@@ -18,7 +17,7 @@ import 'package:flutter/services.dart';
 ///  3. Handle recurring events and notification settings
 ///
 /// Current know issues:
-///  1. The left and right buttons do not fire the swipe animation
+///  1. The date picker is borked
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
 
@@ -34,6 +33,7 @@ class _EventsPageState extends State<EventsPage> {
   int get pageIndex => date.difference(baseDate).inDays;
   final EventRepository _repository = EventRepository();
   late final PageController pageController;
+  bool _isProgrammaticChange = false;
 
   @override
   void initState() {
@@ -56,21 +56,33 @@ class _EventsPageState extends State<EventsPage> {
       date = newDate;
     });
 
-    pageController.animateToPage(
-      pageIndex,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-    );
+    _isProgrammaticChange = true;
+
+    pageController
+        .animateToPage(
+          pageIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+        )
+        .then((_) {
+          _isProgrammaticChange = false;
+        });
   }
 
-  /// Handle progressing the date by one day
+  /// Utility method to handle progressing the date by one day
   void _nextDay() {
     _setDate(date.add(const Duration(days: 1)));
   }
 
-  // /// Handle regressing the date by one day
+  /// Utility method to handle regressing the date by one day
   void _prevDay() {
     _setDate(date.subtract(const Duration(days: 1)));
+  }
+
+  /// Utility method for handling page changes in the time picker
+  void _handlePageSwipe(int index) {
+    if (_isProgrammaticChange) return;
+    _setDate(baseDate.add(Duration(days: index)));
   }
 
   /// Handle event creation
@@ -180,8 +192,7 @@ class _EventsPageState extends State<EventsPage> {
             date: date,
             events: _events,
             pageController: pageController,
-            baseDate: baseDate,
-            setDate: _setDate,
+            handlePageSwipe: _handlePageSwipe,
             createEvent: _createEvent,
             updateEvent: _updateEvent,
           ),
