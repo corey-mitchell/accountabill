@@ -15,9 +15,6 @@ import 'package:flutter/semantics.dart';
 ///  1. Handle saving and deleting events  in long term storage
 ///  2. Handle catch/fail/error cases
 ///  3. Handle recurring events and notification settings
-///
-/// Current know issues:
-///  1. The date picker is borked
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
 
