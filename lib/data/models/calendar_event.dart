@@ -1,6 +1,11 @@
 import 'package:uuid/uuid.dart';
 
-/// Calendar event data layer
+/// Data model for calendar events
+///
+/// Uses the uuid package for creating unique identifiers for each object.
+/// These will be created automagically, but an ID can be supplied manually
+/// during creation. The IDs will be used for performing update and delete
+/// operations on specific events.
 class CalendarEvent {
   static const Uuid _uuid = Uuid();
 
@@ -22,7 +27,7 @@ class CalendarEvent {
 
   Duration get duration => end.difference(start);
 
-  /// This will be used for converting incoming dynamic JSON data into the preferred CalendarEvent type
+  /// This will be used for converting incoming dynamic JSON data into the preferred CalendarEvent type on data load
   factory CalendarEvent.fromJson(Map<String, dynamic> json) {
     return CalendarEvent(
       id: json['id'],
@@ -34,6 +39,7 @@ class CalendarEvent {
     );
   }
 
+  /// This will be used for converting CalendarEvents into the preferred JSON data for outgoing events (creating and updating operations)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
