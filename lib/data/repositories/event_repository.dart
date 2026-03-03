@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:accountabill/data/models/calendar_event.dart';
-// import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
+/// Data object for events
+///
+/// Keeps track of user events, loads events into data object on page
+/// initialization and handles creating, updating and deleting events
 class EventRepository {
   static const String fileName = 'database.json';
   Map<String, CalendarEvent> _events = {};
