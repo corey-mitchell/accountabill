@@ -5,7 +5,6 @@ import 'package:accountabill/widgets/custom_time_picker.dart';
 import 'package:accountabill/pages/handle_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 
 /// User events page
 ///
@@ -13,12 +12,9 @@ import 'package:flutter/services.dart';
 /// edit their events on a calendar component.
 ///
 /// TODOs:
-///  1. Handle saving and deleting events in local storage (and then in long term storage)
+///  1. Handle saving and deleting events  in long term storage
 ///  2. Handle catch/fail/error cases
 ///  3. Handle recurring events and notification settings
-///
-/// Current know issues:
-///  1. The left and right buttons do not fire the swipe animation
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
 
@@ -29,12 +25,17 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> {
   static DateTime date = DateTime.now();
   Map<String, CalendarEvent> _events = {};
-  int pageIndex = 0;
+  // Make a base date way in the past to avoid negative page index numbers
+  DateTime baseDate = DateTime(1900, 1, 1);
+  int get pageIndex => date.difference(baseDate).inDays;
   final EventRepository _repository = EventRepository();
+  late final PageController pageController;
+  bool _isProgrammaticChange = false;
 
   @override
   void initState() {
     super.initState();
+    pageController = PageController(initialPage: pageIndex);
     _initializeEvents();
   }
 
@@ -51,25 +52,34 @@ class _EventsPageState extends State<EventsPage> {
     setState(() {
       date = newDate;
     });
+
+    _isProgrammaticChange = true;
+
+    pageController
+        .animateToPage(
+          pageIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+        )
+        .then((_) {
+          _isProgrammaticChange = false;
+        });
   }
 
-  /// Handle progressing the date by one day
+  /// Utility method to handle progressing the date by one day
   void _nextDay() {
     _setDate(date.add(const Duration(days: 1)));
-    _setPageIndex(pageIndex + 1);
   }
 
-  /// Handle regressing the date by one day
+  /// Utility method to handle regressing the date by one day
   void _prevDay() {
     _setDate(date.subtract(const Duration(days: 1)));
-    _setPageIndex(pageIndex - 1);
   }
 
-  /// Handle directly setting calendar page index
-  void _setPageIndex(int index) {
-    setState(() {
-      pageIndex = index;
-    });
+  /// Utility method for handling page changes in the time picker
+  void _handlePageSwipe(int index) {
+    if (_isProgrammaticChange) return;
+    _setDate(baseDate.add(Duration(days: index)));
   }
 
   /// Handle event creation
@@ -178,10 +188,8 @@ class _EventsPageState extends State<EventsPage> {
           child: CustomTimePicker(
             date: date,
             events: _events,
-            pageIndex: pageIndex,
-            setPageIndex: _setPageIndex,
-            nextDay: _nextDay,
-            prevDay: _prevDay,
+            pageController: pageController,
+            handlePageSwipe: _handlePageSwipe,
             createEvent: _createEvent,
             updateEvent: _updateEvent,
           ),

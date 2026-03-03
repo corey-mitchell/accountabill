@@ -20,82 +20,36 @@ import 'package:flutter/material.dart';
 /// @param void Function() nextDay;
 /// @param void Function() prevDay;
 /// @return StatelessWidget;
-class CustomTimePicker extends StatefulWidget {
+class CustomTimePicker extends StatelessWidget {
   final DateTime date;
   final Map<String, CalendarEvent> events;
-  final int pageIndex;
-  final void Function(int index) setPageIndex;
+  final PageController pageController;
   final void Function(DateTime time) createEvent;
   final void Function(CalendarEvent event) updateEvent;
-  final void Function() nextDay;
-  final void Function() prevDay;
+  final void Function(int index) handlePageSwipe;
 
   const CustomTimePicker({
     super.key,
     required this.date,
     required this.events,
-    required this.pageIndex,
-    required this.setPageIndex,
+    required this.pageController,
     required this.createEvent,
     required this.updateEvent,
-    required this.nextDay,
-    required this.prevDay,
+    required this.handlePageSwipe,
   });
 
-  @override
-  State<CustomTimePicker> createState() => _CustomTimePickerState();
-}
-
-class _CustomTimePickerState extends State<CustomTimePicker> {
   static const double pixelsPerMinute = .75;
   static const double totalHeight = 24 * 60 * pixelsPerMinute;
-  late final PageController _pageController;
-
-  /// Handle initializing state for page controller
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(initialPage: widget.pageIndex);
-  }
-
-  /// Dispose of page controller to prevent memory leaks
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  /// Handle did update life cycle for triggering page animation from sibling component
-  /// Currently causing issues
-  //   @override
-  //   void didUpdateWidget(covariant CustomTimePicker oldWidget) {
-  //     super.didUpdateWidget(oldWidget);
-
-  //     if (oldWidget.pageIndex != widget.pageIndex) {
-  //       _pageController.animateToPage(
-  //         widget.pageIndex,
-  //         duration: const Duration(milliseconds: 300),
-  //         curve: Curves.easeOutCubic,
-  //       );
-  //     }
-  //   }
 
   @override
   Widget build(BuildContext context) {
     return PageView.builder(
-      controller: _pageController,
-      onPageChanged: (index) {
-        if (index > widget.pageIndex) {
-          widget.nextDay();
-        } else {
-          widget.prevDay();
-        }
-        widget.setPageIndex(index);
-      },
+      controller: pageController,
+      onPageChanged: handlePageSwipe,
       itemBuilder: (context, index) {
         return Semantics(
           container: true,
-          label: 'Schedule for ${formatDate(widget.date)}',
+          label: 'Schedule for ${formatDate(date)}',
           child: SingleChildScrollView(
             padding: EdgeInsets.only(
               top: 16,
@@ -144,14 +98,14 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
             button: true,
             label: 'Add event at ${formatHour(time)}',
             onTap: () {
-              final dateTime = timeOfDayToDateTime(widget.date, time);
-              widget.createEvent(dateTime);
+              final dateTime = timeOfDayToDateTime(date, time);
+              createEvent(dateTime);
             },
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: () {
-                final dateTime = timeOfDayToDateTime(widget.date, time);
-                widget.createEvent(dateTime);
+                final dateTime = timeOfDayToDateTime(date, time);
+                createEvent(dateTime);
               },
               child: const SizedBox.expand(),
             ),
@@ -168,8 +122,8 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
     }
 
     // Filter out events from other days
-    final List<CalendarEvent> filteredEvents = widget.events.values
-        .where((event) => event.start.day == widget.date.day)
+    final List<CalendarEvent> filteredEvents = events.values
+        .where((event) => event.start.day == date.day)
         .toList();
 
     return Stack(
@@ -191,7 +145,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
             label: "${event.title}, from $start to $end",
             hint: "Tap to edit",
             child: GestureDetector(
-              onTap: () => widget.updateEvent(event),
+              onTap: () => updateEvent(event),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final elementHeight = constraints.maxHeight;
