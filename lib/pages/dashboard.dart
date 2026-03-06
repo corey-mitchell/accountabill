@@ -1,5 +1,7 @@
 import 'package:accountabill/widgets/completion_rate.dart';
+import 'package:accountabill/widgets/main_cta.dart';
 import 'package:accountabill/widgets/money_donated.dart';
+import 'package:accountabill/widgets/page_container.dart';
 import 'package:flutter/material.dart';
 
 /// Main Dashboard page
@@ -37,8 +39,7 @@ class DashboardPage extends StatelessWidget {
 
   /// Page UI main widget
   Widget _buildUI(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16),
+    return PageContainer(
       child: Column(
         children: [
           Expanded(
@@ -76,24 +77,11 @@ class DashboardPage extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).padding.bottom,
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/events');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                  foregroundColor: Colors.white,
-                ),
-                child: Text("Schedule an event"),
-              ),
-            ),
+          MainCTA(
+            child: Text("Schedule an event"),
+            onPressed: () {
+              Navigator.pushNamed(context, '/events');
+            },
           ),
         ],
       ),
