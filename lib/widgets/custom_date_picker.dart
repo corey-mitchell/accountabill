@@ -31,18 +31,8 @@ class CustomDatePicker extends StatelessWidget {
     return Semantics(
       container: true,
       label: 'Currently selected date is ${formatDate(date)}',
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.08),
-              offset: Offset(0, 4),
-              blurRadius: 6,
-            ),
-          ],
-        ),
+      child: Material(
+        elevation: 4,
         child: Row(
           children: [
             // Previous day
