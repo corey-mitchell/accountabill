@@ -1,5 +1,7 @@
 import 'package:accountabill/data/models/calendar_event.dart';
 import 'package:accountabill/utils/date_time_builder.dart';
+import 'package:accountabill/widgets/main_cta.dart';
+import 'package:accountabill/widgets/page_container.dart';
 import 'package:flutter/material.dart';
 
 /// This page is used for creating, editing and deleting events off of the
@@ -88,171 +90,150 @@ class _HandleEventPageState extends State<HandleEventPage> {
   }
 
   Widget _buildUI(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Form(
-                key: _formKey,
-                autovalidateMode: AutovalidateMode.disabled,
-                child: Column(
-                  spacing: 16,
-                  children: [
-                    TextFormField(
-                      controller: _titleController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Event name',
-                      ),
-                      validator: (String? value) {
-                        return (value == null || value.trim().isEmpty)
-                            ? 'Value cannot be empty'
-                            : null;
-                      },
+    return PageContainer(
+      child: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.disabled,
+              child: Column(
+                spacing: 16,
+                children: [
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Event name',
                     ),
-                    Row(
-                      spacing: 16,
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: TextFormField(
-                            controller: _startController,
-                            readOnly: true,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Start time',
-                            ),
-                            validator: (String? value) {
-                              return (value == null || value.trim().isEmpty)
-                                  ? 'Value cannot be empty'
-                                  : null;
-                            },
-                            onTap: () {
-                              _pickTime(
-                                context,
-                                _startController,
-                                (time) =>
-                                    setState(() => selectedStartTime = time),
-                              );
-                            },
+                    validator: (String? value) {
+                      return (value == null || value.trim().isEmpty)
+                          ? 'Value cannot be empty'
+                          : null;
+                    },
+                  ),
+                  Row(
+                    spacing: 16,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: TextFormField(
+                          controller: _startController,
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Start time',
                           ),
+                          validator: (String? value) {
+                            return (value == null || value.trim().isEmpty)
+                                ? 'Value cannot be empty'
+                                : null;
+                          },
+                          onTap: () {
+                            _pickTime(
+                              context,
+                              _startController,
+                              (time) =>
+                                  setState(() => selectedStartTime = time),
+                            );
+                          },
                         ),
-                        Expanded(
-                          flex: 1,
-                          child: TextFormField(
-                            controller: _endController,
-                            readOnly: true,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'End time',
-                            ),
-                            validator: (String? value) {
-                              return (value == null || value.trim().isEmpty)
-                                  ? 'Value cannot be empty'
-                                  : null;
-                            },
-                            onTap: () {
-                              _pickTime(
-                                context,
-                                _endController,
-                                (time) =>
-                                    setState(() => selectedEndTime = time),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    TextFormField(
-                      controller: _descriptionController,
-                      maxLines: null,
-                      minLines: 3,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Description',
-                        alignLabelWithHint: true,
                       ),
+                      Expanded(
+                        flex: 1,
+                        child: TextFormField(
+                          controller: _endController,
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'End time',
+                          ),
+                          validator: (String? value) {
+                            return (value == null || value.trim().isEmpty)
+                                ? 'Value cannot be empty'
+                                : null;
+                          },
+                          onTap: () {
+                            _pickTime(
+                              context,
+                              _endController,
+                              (time) => setState(() => selectedEndTime = time),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextFormField(
+                    controller: _descriptionController,
+                    maxLines: null,
+                    minLines: 3,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Description',
+                      alignLabelWithHint: true,
                     ),
-                    // CheckboxListTile(
-                    //   title: const Text("Remind me"),
-                    //   activeColor: Theme.of(context).colorScheme.inversePrimary,
-                    //   controlAffinity: ListTileControlAffinity.leading,
-                    //   value: hasReminderSet,
-                    //   onChanged: (bool? value) {
-                    //     setState(() {
-                    //       hasReminderSet = value ?? false;
-                    //     });
-                    //   },
-                    // ), // TODO: Handle reminders and recurring events
-                  ],
-                ),
+                  ),
+                  // CheckboxListTile(
+                  //   title: const Text("Remind me"),
+                  //   activeColor: Theme.of(context).colorScheme.inversePrimary,
+                  //   controlAffinity: ListTileControlAffinity.leading,
+                  //   value: hasReminderSet,
+                  //   onChanged: (bool? value) {
+                  //     setState(() {
+                  //       hasReminderSet = value ?? false;
+                  //     });
+                  //   },
+                  // ), // TODO: Handle reminders and recurring events
+                ],
               ),
             ),
-            Column(
-              children: [
-                _buildSaveButton(),
-                if (widget.isEditing) _buildDeleteButton(),
-              ],
-            ),
-          ],
-        ),
+          ),
+          Column(
+            children: [
+              _buildSaveButton(),
+              if (widget.isEditing) _buildDeleteButton(),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSaveButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
-        onPressed: () {
-          if (!_formKey.currentState!.validate()) {
-            return; // Stop if invalid
-          }
-          final start = selectedStartTime ?? widget.initialTime;
-          final end =
-              selectedEndTime ?? selectedStartTime!.add(Duration(hours: 1));
-          Navigator.pop(
-            context,
-            CalendarEvent(
-              id: widget.existingEvent?.id,
-              title: _titleController.text.trim(),
-              start: start,
-              end: end,
-              description: _descriptionController.text.trim(),
-              hasReminderSet: hasReminderSet,
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          foregroundColor: Colors.white,
-        ),
-        child: Text(widget.isEditing ? "Update" : "Save"),
-      ),
+    return MainCTA(
+      child: Text(widget.isEditing ? "Update" : "Save"),
+      onPressed: () {
+        if (!_formKey.currentState!.validate()) {
+          return; // Stop if invalid
+        }
+        final start = selectedStartTime ?? widget.initialTime;
+        final end =
+            selectedEndTime ?? selectedStartTime!.add(Duration(hours: 1));
+        Navigator.pop(
+          context,
+          CalendarEvent(
+            id: widget.existingEvent?.id,
+            title: _titleController.text.trim(),
+            start: start,
+            end: end,
+            description: _descriptionController.text.trim(),
+            hasReminderSet: hasReminderSet,
+          ),
+        );
+      },
     );
   }
 
   Widget _buildDeleteButton() {
-    return Padding(
-      padding: EdgeInsets.only(top: 16),
-      child: SizedBox(
-        width: double.infinity,
-        height: 48,
-        child: ElevatedButton(
-          onPressed: () {
-            widget.deleteEvent?.call(widget.existingEvent!);
-            Navigator.pop(context);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: Text("Delete"),
-        ),
-      ),
+    return MainCTA(
+      child: Text("Delete"),
+      onPressed: () {
+        widget.deleteEvent?.call(widget.existingEvent!);
+        Navigator.pop(context);
+      },
+      backgroundColor: Colors.red,
+      foregroundColor: Colors.white,
     );
   }
 
