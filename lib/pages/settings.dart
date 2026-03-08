@@ -26,6 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }; // TODO: Get real accounts list
   Charity? charity = Charity(
     name: "American Cancer Society",
+    amountDonated: 25,
   ); // TODO: Have empty state to remove default starting value
 
   /// Handle charity selection
