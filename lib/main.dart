@@ -1,3 +1,5 @@
+import 'package:accountabill/data/repositories/authentication_repository.dart';
+import 'package:accountabill/pages/authentication.dart';
 import 'package:accountabill/pages/charity_search.dart';
 import 'package:accountabill/pages/events.dart';
 import 'package:accountabill/pages/settings.dart';
@@ -43,15 +45,15 @@ class MyApp extends StatelessWidget {
       ),
       // Create and use stack navigation
       routes: {
-        // '/': (BuildContext ctx) => DashboardPage(userName: 'Corey'), // Using home to inject dynamic data
+        '/dashboard': (BuildContext ctx) => DashboardPage(),
         '/settings': (BuildContext ctx) => SettingsPage(),
         '/settings/charity_search': (BuildContext ctx) => CharitySearchPage(),
         '/events': (BuildContext ctx) => EventsPage(),
       },
-      initialRoute: '/', // Can omit if value is '/'
+      initialRoute: '/',
       // We do not need the home property with stack navigation.
       // UNLESS the route requires data to be passed down
-      home: DashboardPage(userName: 'Corey'),
+      home: AuthPage(),
     );
   }
 }

@@ -93,47 +93,57 @@ class _CharitySearchPageState extends State<CharitySearchPage> {
     final TextEditingController searchController = TextEditingController(
       text: selectedCharity != null ? selectedCharity?.name : "",
     );
-    return PageContainer(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Expanded(
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  TextFormField(
-                    controller: searchController,
-                    focusNode: _focusNode,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Search',
-                    ),
-                    validator: (String? value) {
-                      return (value == null || value.trim().isEmpty)
-                          ? 'Value cannot be empty'
-                          : null;
-                    },
-                  ),
-                  if (_focused) _searchResults(),
-                ],
-              ),
-            ),
-            MainCTA(
-              child: Text("Save"),
-              onPressed: () {
-                if (!_formKey.currentState!.validate()) {
-                  return; // Stop if invalid
-                }
-                // TODO: Update this to return selected value
-                // (Will need to first check if user has history with selected charity)
-                Navigator.pop(context, selectedCharity);
-              },
-            ),
-          ],
+    if (_filteredCharities.isEmpty) {
+      return Center(
+        child: Container(
+          width: 200,
+          height: 200,
+          child: CircularProgressIndicator(),
         ),
-      ),
-    );
+      );
+    } else {
+      return PageContainer(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    TextFormField(
+                      controller: searchController,
+                      focusNode: _focusNode,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Search',
+                      ),
+                      validator: (String? value) {
+                        return (value == null || value.trim().isEmpty)
+                            ? 'Value cannot be empty'
+                            : null;
+                      },
+                    ),
+                    if (_focused) _searchResults(),
+                  ],
+                ),
+              ),
+              MainCTA(
+                child: Text("Save"),
+                onPressed: () {
+                  if (!_formKey.currentState!.validate()) {
+                    return; // Stop if invalid
+                  }
+                  // TODO: Update this to return selected value
+                  // (Will need to first check if user has history with selected charity)
+                  Navigator.pop(context, selectedCharity);
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   /// Search results
