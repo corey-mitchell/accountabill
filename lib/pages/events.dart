@@ -41,10 +41,16 @@ class _EventsPageState extends State<EventsPage> {
 
   // Read events from local DB into state
   void _initializeEvents() async {
-    final loadedEvents = await _repository.loadEvents();
-    setState(() {
-      _events = loadedEvents;
-    });
+    try {
+      final loadedEvents = await _repository.loadEvents();
+      setState(() {
+        _events = loadedEvents;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: const Text("Failed to fetch events")));
+    }
   }
 
   /// Handle setting the date object
@@ -104,6 +110,16 @@ class _EventsPageState extends State<EventsPage> {
         "Event created at ${TimeOfDay.fromDateTime(time).format(context)}",
         TextDirection.ltr,
       );
+
+      // Show success snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: const Text("Event successfully created")),
+      );
+    } else {
+      // Show failure snackbar
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: const Text("Failed to create event")));
     }
   }
 
@@ -137,6 +153,16 @@ class _EventsPageState extends State<EventsPage> {
         "Event successfully updated",
         TextDirection.ltr,
       );
+
+      // Show success snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: const Text("Event successfully updated")),
+      );
+    } else {
+      // Show failure snackbar
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: const Text("Failed to update event")));
     }
   }
 
@@ -156,6 +182,16 @@ class _EventsPageState extends State<EventsPage> {
         "Event successfully deleted",
         TextDirection.ltr,
       );
+
+      // Show success snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: const Text("Event successfully deleted")),
+      );
+    } else {
+      // Show failure snackbar
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: const Text("Failed to delete event")));
     }
   }
 
