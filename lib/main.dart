@@ -1,9 +1,17 @@
+import 'package:accountabill/pages/charity_search.dart';
 import 'package:accountabill/pages/events.dart';
 import 'package:accountabill/pages/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:accountabill/pages/dashboard.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    print('Firebase initialization error: $e');
+  }
   runApp(const MyApp());
 }
 
@@ -37,6 +45,7 @@ class MyApp extends StatelessWidget {
       routes: {
         // '/': (BuildContext ctx) => DashboardPage(userName: 'Corey'), // Using home to inject dynamic data
         '/settings': (BuildContext ctx) => SettingsPage(),
+        '/settings/charity_search': (BuildContext ctx) => CharitySearchPage(),
         '/events': (BuildContext ctx) => EventsPage(),
       },
       initialRoute: '/', // Can omit if value is '/'

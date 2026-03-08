@@ -1,5 +1,7 @@
 import 'package:accountabill/data/models/card_account.dart';
 import 'package:accountabill/data/models/charity.dart';
+import 'package:accountabill/pages/charity_search.dart';
+import 'package:accountabill/widgets/page_container.dart';
 import 'package:flutter/material.dart';
 
 /// User settings page
@@ -9,15 +11,50 @@ import 'package:flutter/material.dart';
 /// This is where the user will be able to see and
 /// edit their selected charity, payment instrument and
 /// any additional settings.
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
+  SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
   final Map<String, CardAccount> accounts = {
     '0': CardAccount(isDefault: true),
     '1': CardAccount(),
     '2': CardAccount(isExpired: true),
   }; // TODO: Get real accounts list
-  final Charity charity = Charity();
+  Charity? charity = Charity(
+    name: "American Cancer Society",
+  ); // TODO: Have empty state to remove default starting value
 
-  SettingsPage({super.key});
+  /// Handle charity selection
+  void _handleCharitySelection(BuildContext context) async {
+    final charitySelection = await Navigator.push<Charity>(
+      context,
+      MaterialPageRoute(builder: (_) => CharitySearchPage(charity: charity)),
+    );
+
+    // Validate user input
+    if (charitySelection == null || charitySelection.name == charity?.name)
+      return;
+
+    try {
+      setState(() {
+        charity = charitySelection;
+      });
+      // Show success snackbar
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: const Text("Charity successfully set")));
+    } catch (e) {
+      print(e);
+      // Show error snackbar
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: const Text("Failed to set charity")));
+    }
+  }
 
   /// Page scaffold
   @override
@@ -36,14 +73,16 @@ class SettingsPage extends StatelessWidget {
 
   /// Page UI main widget
   Widget _buildUI(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: Column(spacing: 16, children: [_charitiesList(), _accountsList()]),
+    return PageContainer(
+      child: Column(
+        spacing: 16,
+        children: [_charitiesList(context), _accountsList()],
+      ),
     );
   }
 
   /// Charities list
-  Widget _charitiesList() {
+  Widget _charitiesList(BuildContext context) {
     return Column(
       spacing: 8,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,9 +95,7 @@ class SettingsPage extends StatelessWidget {
           ),
         ),
         GestureDetector(
-          onTap: () {
-            print("Select charity");
-          },
+          onTap: () => _handleCharitySelection(context),
           child: Container(
             width: double.infinity,
             padding: EdgeInsets.only(top: 4, bottom: 4),
@@ -78,17 +115,17 @@ class SettingsPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "American Cancer Society",
+                          charity?.name ?? '',
                           style: TextStyle(fontWeight: FontWeight.bold),
-                        ), // TODO: Replace with true value
+                        ),
                         Text("Total donated:", style: TextStyle(fontSize: 12)),
                       ],
                     ),
                   ),
                   Text(
-                    "\$430.00",
+                    "\$${charity?.amountDonated?.toStringAsFixed(2) ?? '0.00'}",
                     style: TextStyle(fontWeight: FontWeight.bold),
-                  ), // TODO: Replace with true value
+                  ),
                   Icon(Icons.chevron_right),
                 ],
               ),

@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 /// Keeps track of user events, loads events into data object on page
 /// initialization and handles creating, updating and deleting events
 class EventRepository {
-  static const String fileName = 'database.json';
+  static const String fileName = 'events-database.json';
   Map<String, CalendarEvent> _events = {};
 
   /// Method for handling initial event loading
