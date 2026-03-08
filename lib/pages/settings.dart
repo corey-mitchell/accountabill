@@ -1,6 +1,8 @@
 import 'package:accountabill/data/models/card_account.dart';
 import 'package:accountabill/data/models/charity.dart';
+import 'package:accountabill/data/repositories/authentication_repository.dart';
 import 'package:accountabill/pages/charity_search.dart';
+import 'package:accountabill/widgets/main_cta.dart';
 import 'package:accountabill/widgets/page_container.dart';
 import 'package:flutter/material.dart';
 
