@@ -4,8 +4,11 @@ import 'package:accountabill/widgets/main_cta.dart';
 import 'package:accountabill/widgets/page_container.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
+
   @override
   _AuthPageState createState() => _AuthPageState();
 }
@@ -13,10 +16,13 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthenticationRepository _repository = AuthenticationRepository();
 
   Future<void> _signIn() async {
-    final hasUser = await _repository.signIn(
+    final authRepo = Provider.of<AuthenticationRepository>(
+      context,
+      listen: false,
+    );
+    final hasUser = await authRepo.signIn(
       context,
       _emailController.text,
       _passwordController.text,
@@ -30,7 +36,11 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _signUp() async {
-    final hasUser = await _repository.signUp(
+    final authRepo = Provider.of<AuthenticationRepository>(
+      context,
+      listen: false,
+    );
+    final hasUser = await authRepo.signUp(
       context,
       _emailController.text,
       _passwordController.text,
@@ -51,6 +61,7 @@ class _AuthPageState extends State<AuthPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         }
+        print(snapshot);
         if (snapshot.hasData) {
           return DashboardPage();
         } else {
@@ -96,8 +107,8 @@ class _AuthPageState extends State<AuthPage> {
             ),
             Column(
               children: [
-                MainCTA(onPressed: _signIn, child: Text('Sign In')),
-                TextButton(onPressed: _signUp, child: Text('Sign Up')),
+                MainCTA(onPressed: () => _signIn(), child: Text('Sign In')),
+                TextButton(onPressed: () => _signUp(), child: Text('Sign Up')),
               ],
             ),
           ],

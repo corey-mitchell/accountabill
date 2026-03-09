@@ -1,36 +1,31 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:accountabill/data/models/calendar_event.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Data object for events
 ///
 /// Keeps track of user events, loads events into data object on page
 /// initialization and handles creating, updating and deleting events
 class EventRepository {
-  static const String fileName = 'events-database.json';
   Map<String, CalendarEvent> _events = {};
 
   /// Method for handling initial event loading
   ///
   /// @returns Map<String, CalendarEvent>
-  Future<Map<String, CalendarEvent>> loadEvents() async {
-    final documents = await getApplicationDocumentsDirectory();
-    final file = File('${documents.path}/$fileName');
+  Future<Map<String, CalendarEvent>> loadEvents(String userId) async {
+    try {
+      final eventsCollection = FirebaseFirestore.instance.collection('events');
+      QuerySnapshot snapshot = await eventsCollection
+          .where('userId', isEqualTo: userId)
+          .get();
 
-    /// If file doesn't exist, copy from assets
-    /// (Relic from previous implementation, left in for reference.)
-    // if (!await file.exists()) {
-    //   final assetData = await rootBundle.loadString('assets/database.json');
-    //   await file.writeAsString(assetData);
-    // }
-
-    final jsonString = await file.readAsString();
-    final Map<String, dynamic> jsonMap = json.decode(jsonString);
-
-    _events = jsonMap.map(
-      (key, value) => MapEntry(key, CalendarEvent.fromJson(value)),
-    );
+      // Loop through the documents and convert them to CalendarEvent objects
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        _events[doc.id] = CalendarEvent.fromJson({...data, 'id': doc.id});
+      }
+    } catch (e) {
+      print(e);
+    }
 
     return _events;
   }
@@ -38,27 +33,42 @@ class EventRepository {
   /// Method for creating a new event
   ///
   /// @returns CalendarEvent for success, null for failure
-  Future<CalendarEvent?> createEvent(CalendarEvent eventInput) async {
-    final start = eventInput.start;
-    final end = eventInput.end;
-    final newEvent = CalendarEvent(
-      start: start,
-      end: end,
-      title: eventInput.title,
-      description: eventInput.description,
-      hasReminderSet: eventInput.hasReminderSet,
-    );
-
-    Directory documents = await getApplicationDocumentsDirectory();
+  Future<CalendarEvent?> createEvent(
+    String userId,
+    CalendarEvent eventInput,
+  ) async {
     try {
-      File file = File('${documents.path}/$fileName');
-      Map<String, CalendarEvent> jsonMap = {..._events, newEvent.id: newEvent};
-      final Map<String, dynamic> encodableMap = {
-        for (final entry in jsonMap.entries) entry.key: entry.value.toJson(),
+      final start = eventInput.start;
+      final end = eventInput.end;
+
+      // Add to Firebase collection
+      final eventsCollection = FirebaseFirestore.instance.collection('events');
+      DocumentReference eventDocRef = await eventsCollection.add({
+        'userId': userId, // Tie event to user
+        'start': start,
+        'end': end,
+        'title': eventInput.title,
+        'description': eventInput.description,
+        'hasReminderSet': eventInput.hasReminderSet,
+      });
+
+      final newEvent = CalendarEvent(
+        id: eventDocRef.id,
+        userId: userId,
+        start: start,
+        end: end,
+        title: eventInput.title,
+        description: eventInput.description,
+        hasReminderSet: eventInput.hasReminderSet,
+      );
+
+      // Add to local events
+      Map<String, CalendarEvent> jsonMap = {
+        ..._events,
+        eventDocRef.id: newEvent,
       };
-      String jsonString = json.encode(encodableMap);
-      await file.writeAsString(jsonString);
       _events = jsonMap;
+
       return newEvent;
     } catch (e) {
       print('Error: $e');
@@ -70,20 +80,23 @@ class EventRepository {
   ///
   /// @returns CalendarEvent for success, null for failure
   Future<CalendarEvent?> updateEvent(CalendarEvent eventInput) async {
-    // Update event in storage
-    Directory documents = await getApplicationDocumentsDirectory();
     try {
-      File file = File('${documents.path}/$fileName');
+      final eventsCollection = FirebaseFirestore.instance.collection('events');
+      DocumentReference eventDocRef = eventsCollection.doc(
+        eventInput.id,
+      ); // Target specific event
+      await eventDocRef.update({
+        'start': Timestamp.fromDate(eventInput.start),
+        'end': Timestamp.fromDate(eventInput.end),
+        'title': eventInput.title,
+        'description': eventInput.description,
+        'hasReminderSet': eventInput.hasReminderSet,
+      });
+
       Map<String, CalendarEvent> updatedEvents = {
         ..._events,
         eventInput.id: eventInput,
       };
-      final Map<String, dynamic> encodableMap = {
-        for (final entry in updatedEvents.entries)
-          entry.key: entry.value.toJson(),
-      };
-      String jsonString = json.encode(encodableMap);
-      await file.writeAsString(jsonString);
       _events = updatedEvents;
       return eventInput;
     } catch (e) {
@@ -96,14 +109,19 @@ class EventRepository {
   ///
   /// @returns true for successful deletion and false for failed case
   Future<bool> deleteEvent(CalendarEvent event) async {
-    Directory documents = await getApplicationDocumentsDirectory();
     try {
-      File file = File('${documents.path}/$fileName');
+      final eventsCollection = FirebaseFirestore.instance.collection('events');
+
+      // Get a reference to the event document using the Firestore document ID
+      DocumentReference eventDocRef = eventsCollection.doc(event.id);
+
+      // Delete the event document from Firestore
+      await eventDocRef.delete();
+
       Map<String, CalendarEvent> jsonMap = _events;
       jsonMap.remove(event.id);
-      String jsonString = json.encode(jsonMap);
-      await file.writeAsString(jsonString);
       _events = jsonMap;
+
       return true;
     } catch (e) {
       print('Error: $e');
