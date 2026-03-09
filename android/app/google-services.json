@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "101007391798",
+    "project_id": "account-a-bill",
+    "storage_bucket": "account-a-bill.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101007391798:android:93a38319c6fdd06155ac97",
+        "android_client_info": {
+          "package_name": "com.example.accountabill"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM98pSCNXsA96JEuXvxXtMGu57gUgT0Qg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
