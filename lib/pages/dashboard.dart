@@ -1,0 +1,86 @@
+import 'package:accountabill/widgets/completion_rate.dart';
+import 'package:accountabill/widgets/main_cta.dart';
+import 'package:accountabill/widgets/money_donated.dart';
+import 'package:accountabill/widgets/page_container.dart';
+import 'package:flutter/material.dart';
+
+/// Main Dashboard page
+///
+/// This is where the user will see general statistics and
+/// be driven to other places in the application.
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+
+  /// Page scaffold
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(appBar: _appBar(context), body: _buildUI(context));
+  }
+
+  /// Page app bar widget
+  PreferredSizeWidget _appBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      title: Text("Dashboard"),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.settings),
+          onPressed: () {
+            Navigator.pushNamed(context, '/settings');
+          },
+        ),
+      ],
+    );
+  }
+
+  /// Page UI main widget
+  Widget _buildUI(BuildContext context) {
+    return PageContainer(
+      child: Column(
+        children: [
+          Expanded(
+            child: Column(
+              spacing: 32,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [CompletionRate(), MoneyDonated()],
+                ),
+
+                Container(
+                  width: double.infinity, // consume full width
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.inverseSurface,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                  child: Column(
+                    spacing: 16,
+                    children: [
+                      Text(
+                        "Words of encouragement:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        "Lorem ipsum dolor sit amet, consectetur adipisicing elif.",
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          MainCTA(
+            child: Text("Schedule an event"),
+            onPressed: () {
+              Navigator.pushNamed(context, '/events');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
