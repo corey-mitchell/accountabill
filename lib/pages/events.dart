@@ -1,10 +1,12 @@
 import 'package:accountabill/data/models/calendar_event.dart';
+import 'package:accountabill/data/repositories/authentication_repository.dart';
 import 'package:accountabill/data/repositories/event_repository.dart';
 import 'package:accountabill/widgets/custom_date_picker.dart';
 import 'package:accountabill/widgets/custom_time_picker.dart';
 import 'package:accountabill/pages/handle_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:provider/provider.dart';
 
 /// User events page
 ///
@@ -41,8 +43,13 @@ class _EventsPageState extends State<EventsPage> {
 
   // Read events from local DB into state
   void _initializeEvents() async {
+    final authRepo = Provider.of<AuthenticationRepository>(
+      context,
+      listen: false,
+    );
     try {
-      final loadedEvents = await _repository.loadEvents();
+      if (authRepo.userId == null) throw Error();
+      final loadedEvents = await _repository.loadEvents(authRepo.userId!);
       setState(() {
         _events = loadedEvents;
       });
@@ -90,14 +97,25 @@ class _EventsPageState extends State<EventsPage> {
 
   /// Handle event creation
   void _createEvent(DateTime time) async {
+    final authRepo = Provider.of<AuthenticationRepository>(
+      context,
+      listen: false,
+    );
+    if (authRepo.userId == null) throw Error();
+
     final eventInput = await Navigator.push<CalendarEvent>(
       context,
-      MaterialPageRoute(builder: (_) => HandleEventPage(initialTime: time)),
+      MaterialPageRoute(
+        builder: (_) => HandleEventPage(authRepo: authRepo, initialTime: time),
+      ),
     );
 
     // Validate user input
     if (eventInput == null || eventInput.title.isEmpty) return;
-    final CalendarEvent? newEvent = await _repository.createEvent(eventInput);
+    final CalendarEvent? newEvent = await _repository.createEvent(
+      authRepo.userId!,
+      eventInput,
+    );
     if (newEvent != null) {
       // Update UI
       setState(() {
@@ -125,10 +143,15 @@ class _EventsPageState extends State<EventsPage> {
 
   /// Handle event update
   void _updateEvent(CalendarEvent event) async {
+    final authRepo = Provider.of<AuthenticationRepository>(
+      context,
+      listen: false,
+    );
     final eventInput = await Navigator.push<CalendarEvent>(
       context,
       MaterialPageRoute(
         builder: (_) => HandleEventPage(
+          authRepo: authRepo,
           initialTime: event.start,
           existingEvent: event,
           deleteEvent: _deleteEvent,

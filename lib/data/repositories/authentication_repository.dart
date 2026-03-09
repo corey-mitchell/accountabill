@@ -1,13 +1,13 @@
-import 'package:accountabill/pages/authentication.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class AuthenticationRepository {
+class AuthenticationRepository extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   static UserCredential? userCredential;
   static User? user;
 
-  String get email => user?.email ?? '';
+  String? get userId => _auth.currentUser?.uid;
+  String get email => _auth.currentUser?.email ?? '';
   AuthCredential? get authCredential => userCredential?.credential;
   bool get hasUser => _auth.currentUser != null;
 
@@ -22,6 +22,7 @@ class AuthenticationRepository {
       // print('User signed up: ${userCredential.user?.email}');
       userCredential = userCredential;
       user = userCredential.user;
+      notifyListeners();
       return true;
     } on FirebaseAuthException catch (e) {
       print(e);
@@ -38,8 +39,14 @@ class AuthenticationRepository {
     String password,
   ) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       // print('User signed in: ${userCredential.user?.email}');
+      userCredential = userCredential;
+      user = userCredential.user;
+      notifyListeners();
       return true;
     } on FirebaseAuthException catch (e) {
       print(e);
@@ -53,7 +60,7 @@ class AuthenticationRepository {
   Future<void> logOut(BuildContext context) async {
     try {
       await _auth.signOut();
-      Navigator.push(context, MaterialPageRoute(builder: (_) => AuthPage()));
+      notifyListeners();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Successfully logged out")));
