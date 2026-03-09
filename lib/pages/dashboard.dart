@@ -8,12 +8,8 @@ import 'package:flutter/material.dart';
 ///
 /// This is where the user will see general statistics and
 /// be driven to other places in the application.
-///
-/// @params String userName
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key, required this.userName});
-
-  final String userName;
+  const DashboardPage({super.key});
 
   /// Page scaffold
   @override
@@ -25,7 +21,7 @@ class DashboardPage extends StatelessWidget {
   PreferredSizeWidget _appBar(BuildContext context) {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      title: Text("Welcome, $userName"),
+      title: Text("Dashboard"),
       actions: [
         IconButton(
           icon: Icon(Icons.settings),

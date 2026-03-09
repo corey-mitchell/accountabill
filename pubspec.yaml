@@ -48,6 +48,8 @@ dependencies:
   firebase_core: ^4.5.0
   cloud_firestore: ^6.1.3
   firebase_database: ^12.1.4
+  firebase_auth: ^6.2.0
+  provider: ^6.1.5+1
 
   # The following is for the Auth0 Flutter SDK
   # This is used for handling authentication services

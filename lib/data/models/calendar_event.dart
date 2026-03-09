@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 /// Data model for calendar events
@@ -9,7 +10,8 @@ import 'package:uuid/uuid.dart';
 class CalendarEvent {
   static const Uuid _uuid = Uuid();
 
-  final String id;
+  final String id; // Event id
+  final String userId; // User id
   final DateTime start;
   final DateTime end;
   final String title;
@@ -18,6 +20,7 @@ class CalendarEvent {
 
   CalendarEvent({
     String? id,
+    required this.userId,
     required this.start,
     required this.end,
     required this.title,
@@ -31,8 +34,9 @@ class CalendarEvent {
   factory CalendarEvent.fromJson(Map<String, dynamic> json) {
     return CalendarEvent(
       id: json['id'],
-      start: DateTime.parse(json['start']),
-      end: DateTime.parse(json['end']),
+      userId: json['userId'],
+      start: (json['start'] as Timestamp).toDate(),
+      end: (json['end'] as Timestamp).toDate(),
       title: json['title'],
       description: json['description'],
       hasReminderSet: json['hasReminderSet'],
@@ -43,6 +47,7 @@ class CalendarEvent {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'userId': userId,
       'title': title,
       'start': start.toIso8601String(),
       'end': end.toIso8601String(),

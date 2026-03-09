@@ -1,4 +1,5 @@
 import 'package:accountabill/data/models/calendar_event.dart';
+import 'package:accountabill/data/repositories/authentication_repository.dart';
 import 'package:accountabill/utils/date_time_builder.dart';
 import 'package:accountabill/widgets/main_cta.dart';
 import 'package:accountabill/widgets/page_container.dart';
@@ -22,11 +23,13 @@ import 'package:flutter/material.dart';
 /// @param CalendarEvent? existingEvent;
 /// @param void Function(CalendarEvent event)? deleteEvent;
 class HandleEventPage extends StatefulWidget {
+  final AuthenticationRepository authRepo;
   final DateTime initialTime;
   final CalendarEvent? existingEvent; // null = create mode
   final void Function(CalendarEvent event)? deleteEvent;
   const HandleEventPage({
     super.key,
+    required this.authRepo,
     required this.initialTime,
     this.existingEvent,
     this.deleteEvent,
@@ -214,6 +217,7 @@ class _HandleEventPageState extends State<HandleEventPage> {
           context,
           CalendarEvent(
             id: widget.existingEvent?.id,
+            userId: widget.authRepo.userId!,
             title: _titleController.text.trim(),
             start: start,
             end: end,
