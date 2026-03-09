@@ -1,16 +1,39 @@
 # accountabill
 
-A new Flutter project.
+An accountability buddy designed for keeping the user on task by forcing consequences onto them for failing to accomplish their own goals.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+**Note:** This application is currently only tested for Android.
 
-A few resources to get you started if this is your first Flutter project:
+To start this project, you will need Flutter and Dart installed.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+First, clone the repository:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```
+git clone https://github.com/corey-mitchell/accountabill.git
+```
+
+Then `cd` into the application:
+
+```
+cd ./accountabill
+```
+
+Install the application dependencies:
+
+```
+flutter pub get
+```
+
+Make sure your emulator is running or that your physical device is plugged in. You can run the below command for Android simulator devices to check if your device is listed:
+
+```
+adb devices
+```
+
+Finally, start up the application with the below command!
+
+```
+flutter run
+```
